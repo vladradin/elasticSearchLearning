@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Nest;
+using Newtonsoft.Json.Converters;
+using System;
+using System.ComponentModel;
 
 
 
@@ -34,11 +37,22 @@ public class Employee
     public string LastName { get; set; }
     public string Designation { get; set; }
     public decimal Salary { get; set; }
+
+    [Date(Format = "yyyy-MM-dd")]
     public DateTime DateOfJoining { get; set; }
+
     public string Address { get; set; }
+
+    [Text]
+    [TypeConverter(typeof(StringEnumConverter))]
     public Gender Gender { get; set; }
+
     public int Age { get; set; }
+
+    [Text]
+    [TypeConverter(typeof(StringEnumConverter))]
     public MaritalStatus MaritalStatus { get; set; }
+
     public string Interests { get; set; }
 }
 
@@ -48,7 +62,17 @@ namespace ElasticSearchApp
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var client = new ElasticClient(new Uri("http://localhost:9200"));
+
+            if (client.IndexExists("companyDatabase").Exists)
+                client.DeleteIndex("companyDatabase");
+
+            var rsp = client.CreateIndex("companyDatabase", i => i
+                              .Mappings(mp => mp
+                                .Map<Employee>(emp => emp
+                                    .AutoMap())));
+
+                                          
         }
     }
 }
